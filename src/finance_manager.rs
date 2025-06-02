@@ -1,12 +1,12 @@
 pub mod fm {
-    use crate::atoms::atoms::{Account, ID, IdGenerator, Person, Transaction};
+    use crate::atoms::atoms::{Account, AccountID, IdGenerator, Person, PersonID, Transaction, TransactionID};
     use chrono::{DateTime, Datelike, NaiveDate, Utc};
     use std::{collections::HashMap, vec};
 
     #[derive(Debug, Clone)]
     pub struct FinanceManager {
-        pub persons: HashMap<i32, Person>,
-        pub accounts: HashMap<i32, Account>,
+        pub persons: HashMap<PersonID, Person>,
+        pub accounts: HashMap<AccountID, Account>,
         pub transactions: HashMap<NaiveDate, Vec<Transaction>>,
         id_generator: IdGenerator,
     }
@@ -21,9 +21,16 @@ pub mod fm {
             };
 
             fin_manager.create_person("MainUser");
-            fin_manager.create_account("wallet");
+            fin_manager.create_account_for_persons("wallet", vec![PersonID(1)]);
 
             fin_manager
+        }
+
+        pub fn get_all_data_from_person(&self, prs_id: PersonID) {
+
+            let mut data: HashMap<AccountID, Vec<TransactionID>>;
+            
+
         }
 
         pub fn create_person(&mut self, name: &str) {
@@ -33,26 +40,26 @@ pub mod fm {
                 accounts: vec![],
             };
 
-            self.persons.insert(prs.id.get_value(), prs);
+            self.persons.insert(prs.id, prs);
         }
 
-        pub fn create_account(&mut self, title: &str) {
+        pub fn create_account_for_persons(&mut self, title: &str, ids:Vec<PersonID>) {
             let acc = Account {
                 title: title.to_string(),
                 id: self.id_generator.account(),
-                owners: vec![1],
+                owners: ids,
             };
 
             for owner_id in acc.owners.iter() {
                 match self.persons.get_mut(owner_id) {
-                    Some(owner) => owner.accounts.push(acc.id.get_value()),
+                    Some(owner) => owner.accounts.push(acc.id),
                     None => println!("Person não encontrada"),
                 };
             }
-            self.accounts.insert(acc.id.get_value(), acc);
+            self.accounts.insert(acc.id, acc);
         }
 
-        pub fn get_person_id_by_name(&self, name: &str) -> Option<i32> {
+        pub fn get_person_id_by_name(&self, name: &str) -> Option<PersonID> {
             let mut id = None;
             for person in self.persons.iter() {
                 if person.1.name == name {
@@ -63,18 +70,18 @@ pub mod fm {
             return id;
         }
 
-        pub fn get_person_by_id(&self, id: i32) -> Option<&Person> {
+        pub fn get_person_by_id(&self, id: PersonID) -> Option<&Person> {
             self.persons.get(&id)
         }
 
-        pub fn list_accounts_from(&self, person_id: ID) -> Vec<ID> {
-            let mut res: Vec<ID> = vec![];
-            match self.persons.get(&person_id.get_value()) {
+        pub fn list_accounts_from(&self, person_id: PersonID) -> Vec<AccountID> {
+            let mut res: Vec<AccountID> = vec![];
+            match self.persons.get(&person_id) {
                 Some(person) => {
                     person
                         .accounts
                         .iter()
-                        .for_each(|x| res.push(ID::AccountID(*x)));
+                        .for_each(|x| res.push(*x));
                 }
                 None => (),
             };
@@ -82,7 +89,7 @@ pub mod fm {
             return res;
         }
 
-        pub fn create_deposit(&mut self, target_id: i32, amount: f64) {
+        pub fn create_deposit(&mut self, target_id: AccountID, amount: f64) {
             let trs = Transaction {
                 value: amount,
                 id: self.id_generator.transaction(),
@@ -105,13 +112,13 @@ pub mod fm {
             return date;
         }
 
-        pub fn organize_transactions_by_account(&self, list: Vec<ID>) -> HashMap<ID, Vec<ID>> {
-            let mut balance: HashMap<ID, Vec<ID>> = HashMap::new();
+        pub fn organize_transactions_by_account(&self, list: Vec<TransactionID>) -> HashMap<AccountID, Vec<TransactionID>> {
+            let mut balance: HashMap<AccountID, Vec<TransactionID>> = HashMap::new();
             
             for trs_id in list.iter() {
                 if let Some(trs) = self.get_transaction_by_id(*trs_id) {
                     balance
-                        .entry(ID::AccountID(trs.target_account))
+                        .entry(trs.target_account)
                         .or_insert(vec![])
                         .push(trs.id);
                 };
@@ -122,22 +129,16 @@ pub mod fm {
         }
 
 
-        pub fn get_transaction_by_id(&self, id: ID) -> Option<&Transaction> {
-            match id {
-                ID::TransactionID(_) => {
-                    for transactions in self.transactions.values() {
-                        if let Some(transaction) = transactions.iter().find(|t| t.id == id) {
-                            return Some(transaction);
-                        }
-                    }
-                    None
+        pub fn get_transaction_by_id(&self, id: TransactionID) -> Option<&Transaction> {
+            for transactions in self.transactions.values() {
+                if let Some(transaction) = transactions.iter().find(|t| t.id == id) {
+                    return Some(transaction);
                 }
-                ID::PersonID(_) => panic!(),
-                ID::AccountID(_) => panic!(),
             }
+            None
         }
 
-        pub fn calc_transactions(&self, list: Vec<ID>) -> f64 {
+        pub fn calc_transactions(&self, list: Vec<TransactionID>) -> f64 {
             let mut sum = 0.0;
             for trs_id in list.iter() {
                 if let Some(trs) = self.get_transaction_by_id(*trs_id) {
@@ -148,17 +149,17 @@ pub mod fm {
             return sum;
         }
 
-        pub fn reduce_balance(&self, balance: HashMap<ID, Vec<ID>>) {
+        pub fn reduce_balance(&self, balance: HashMap<AccountID, Vec<TransactionID>>) {
             for (account, transactions) in balance {
                 println!(
                     "{} ${}",
-                    account.get_value(),
+                    account.0,
                     self.calc_transactions(transactions)
                 )
             }
         }
 
-        pub fn create_transaction(&mut self, target_account: i32, date: DateTime<Utc>, amount: f64) -> ID { 
+        pub fn create_transaction(&mut self, target_account: AccountID, date: DateTime<Utc>, amount: f64) -> TransactionID { 
             let trs = Transaction {
                 id: self.id_generator.transaction(),
                 value: amount,
@@ -177,7 +178,7 @@ pub mod fm {
             return id;
         }
 
-        pub fn get_transactions_from_relative_day(&self, offset: i64) -> Vec<ID> {
+        pub fn get_transactions_from_relative_day(&self, offset: i64) -> Vec<TransactionID> {
             let mut res = vec![];
             let today = FinanceManager::extract_date(Utc::now());
             match self.transactions

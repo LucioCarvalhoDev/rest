@@ -1,22 +1,43 @@
 pub mod atoms {
     use chrono::{DateTime, Utc};
 
-    #[derive(Debug, Clone, PartialEq, Copy, Eq, Hash)]
-    pub enum ID {
-        PersonID(i32),
-        AccountID(i32),
-        TransactionID(i32),
-    }
+    // #[derive(Debug, Clone, PartialEq, Copy, Eq, Hash)]
+    // pub enum ID {
+    //     PersonID(i32),
+    //     AccountID(i32),
+    //     TransactionID(i32),
+    // }
 
-    impl ID {
-        pub fn get_value(&self) -> i32 {
-            return match self {
-                ID::PersonID(id) => *id,
-                ID::AccountID(id) => *id,
-                ID::TransactionID(id) => *id,
-            }
-        }
-    }
+    // impl ID {
+    //     pub fn get_value(&self) -> i32 {
+    //         return match self {
+    //             ID::PersonID(id) => *id,
+    //             ID::AccountID(id) => *id,
+    //             ID::TransactionID(id) => *id,
+    //         }
+    //     }
+
+    //     pub fn is_person(&self) -> bool {
+    //         return *self == ID::PersonID(self.get_value())
+    //     }
+
+    //     pub fn is_account(&self) -> bool {
+    //         return *self == ID::AccountID(self.get_value())
+    //     }
+
+    //     pub fn is_transaction(&self) -> bool {
+    //         return *self == ID::TransactionID(self.get_value())
+    //     }
+    // }
+
+    #[derive(Debug, Clone, PartialEq, Copy, Eq, Hash)]
+    pub struct PersonID(pub i32);
+
+    #[derive(Debug, Clone, PartialEq, Copy, Eq, Hash)]
+    pub struct AccountID(pub i32);
+
+    #[derive(Debug, Clone, PartialEq, Copy, Eq, Hash)]
+    pub struct TransactionID(pub i32);
 
     #[derive(Debug, Clone)]
     pub struct IdGenerator {
@@ -34,37 +55,37 @@ pub mod atoms {
             }
         }
 
-        pub fn person(&mut self) -> ID {
+        pub fn person(&mut self) -> PersonID {
             let id = self._person;
             self._person += 1;
-            return ID::PersonID(id);
+            return PersonID(id);
         }
 
-        pub fn account(&mut self) -> ID {
+        pub fn account(&mut self) -> AccountID {
             let id = self._account;
             self._account += 1;
-            return ID::AccountID(id);
+            return AccountID(id);
         }
 
-        pub fn transaction(&mut self) -> ID {
+        pub fn transaction(&mut self) -> TransactionID {
             let id = self._transaction;
             self._transaction += 1;
-            return ID::TransactionID(id);
+            return TransactionID(id);
         }
     }
 
     #[derive(Debug, Clone)]
     pub struct Person {
         pub name: String,
-        pub id: ID,
-        pub accounts: Vec<i32>
+        pub id: PersonID,
+        pub accounts: Vec<AccountID>
     }
 
     #[derive(Debug, Clone, PartialEq, Eq, Hash)]
     pub struct Account {
         pub title: String,
-        pub id: ID,
-        pub owners: Vec<i32>,
+        pub id: AccountID,
+        pub owners: Vec<PersonID>,
     }
 
     #[derive(Debug, Clone)]
@@ -75,10 +96,10 @@ pub mod atoms {
 
     #[derive(Debug, Clone)]
     pub struct Transaction {
-        pub id: ID,
+        pub id: TransactionID,
         pub value: f64,
-        pub target_account: i32,
-        pub source_account: Option<i32>,
+        pub target_account: AccountID,
+        pub source_account: Option<AccountID>,
         pub date: DateTime<Utc>,
     }
 }
