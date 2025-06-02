@@ -1,5 +1,7 @@
 pub mod fm {
-    use crate::atoms::atoms::{Account, AccountID, IdGenerator, Person, PersonID, Transaction, TransactionID};
+    use crate::atoms::atoms::{
+        Account, AccountID, IdGenerator, Person, PersonID, Transaction, TransactionID,
+    };
     use chrono::{DateTime, Datelike, NaiveDate, Utc};
     use std::{collections::HashMap, vec};
 
@@ -26,11 +28,8 @@ pub mod fm {
             fin_manager
         }
 
-        pub fn get_all_data_from_person(&self, prs_id: PersonID) {
-
-            let mut data: HashMap<AccountID, Vec<TransactionID>>;
-            
-
+        pub fn get_all_data_from_person(&self) {
+            unimplemented!();
         }
 
         pub fn create_person(&mut self, name: &str) {
@@ -43,7 +42,7 @@ pub mod fm {
             self.persons.insert(prs.id, prs);
         }
 
-        pub fn create_account_for_persons(&mut self, title: &str, ids:Vec<PersonID>) {
+        pub fn create_account_for_persons(&mut self, title: &str, ids: Vec<PersonID>) {
             let acc = Account {
                 title: title.to_string(),
                 id: self.id_generator.account(),
@@ -78,10 +77,7 @@ pub mod fm {
             let mut res: Vec<AccountID> = vec![];
             match self.persons.get(&person_id) {
                 Some(person) => {
-                    person
-                        .accounts
-                        .iter()
-                        .for_each(|x| res.push(*x));
+                    person.accounts.iter().for_each(|x| res.push(*x));
                 }
                 None => (),
             };
@@ -112,9 +108,12 @@ pub mod fm {
             return date;
         }
 
-        pub fn organize_transactions_by_account(&self, list: Vec<TransactionID>) -> HashMap<AccountID, Vec<TransactionID>> {
+        pub fn organize_transactions_by_account(
+            &self,
+            list: Vec<TransactionID>,
+        ) -> HashMap<AccountID, Vec<TransactionID>> {
             let mut balance: HashMap<AccountID, Vec<TransactionID>> = HashMap::new();
-            
+
             for trs_id in list.iter() {
                 if let Some(trs) = self.get_transaction_by_id(*trs_id) {
                     balance
@@ -122,12 +121,10 @@ pub mod fm {
                         .or_insert(vec![])
                         .push(trs.id);
                 };
-                
             }
 
             return balance;
         }
-
 
         pub fn get_transaction_by_id(&self, id: TransactionID) -> Option<&Transaction> {
             for transactions in self.transactions.values() {
@@ -151,15 +148,16 @@ pub mod fm {
 
         pub fn reduce_balance(&self, balance: HashMap<AccountID, Vec<TransactionID>>) {
             for (account, transactions) in balance {
-                println!(
-                    "{} ${}",
-                    account.0,
-                    self.calc_transactions(transactions)
-                )
+                println!("{} ${}", account.0, self.calc_transactions(transactions))
             }
         }
 
-        pub fn create_transaction(&mut self, target_account: AccountID, date: DateTime<Utc>, amount: f64) -> TransactionID { 
+        pub fn create_transaction(
+            &mut self,
+            target_account: AccountID,
+            date: DateTime<Utc>,
+            amount: f64,
+        ) -> TransactionID {
             let trs = Transaction {
                 id: self.id_generator.transaction(),
                 value: amount,
@@ -181,13 +179,15 @@ pub mod fm {
         pub fn get_transactions_from_relative_day(&self, offset: i64) -> Vec<TransactionID> {
             let mut res = vec![];
             let today = FinanceManager::extract_date(Utc::now());
-            match self.transactions
-                .get(&(today + chrono::Duration::days(offset))) {
-                    Some(list) => {
-                        list.iter().for_each(|x| {res.push(x.id)});
-                    },
-                    None => (),
-                };
+            match self
+                .transactions
+                .get(&(today + chrono::Duration::days(offset)))
+            {
+                Some(list) => {
+                    list.iter().for_each(|x| res.push(x.id));
+                }
+                None => (),
+            };
             return res;
         }
     }

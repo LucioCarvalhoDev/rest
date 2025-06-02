@@ -1,35 +1,6 @@
 pub mod atoms {
     use chrono::{DateTime, Utc};
 
-    // #[derive(Debug, Clone, PartialEq, Copy, Eq, Hash)]
-    // pub enum ID {
-    //     PersonID(i32),
-    //     AccountID(i32),
-    //     TransactionID(i32),
-    // }
-
-    // impl ID {
-    //     pub fn get_value(&self) -> i32 {
-    //         return match self {
-    //             ID::PersonID(id) => *id,
-    //             ID::AccountID(id) => *id,
-    //             ID::TransactionID(id) => *id,
-    //         }
-    //     }
-
-    //     pub fn is_person(&self) -> bool {
-    //         return *self == ID::PersonID(self.get_value())
-    //     }
-
-    //     pub fn is_account(&self) -> bool {
-    //         return *self == ID::AccountID(self.get_value())
-    //     }
-
-    //     pub fn is_transaction(&self) -> bool {
-    //         return *self == ID::TransactionID(self.get_value())
-    //     }
-    // }
-
     #[derive(Debug, Clone, PartialEq, Copy, Eq, Hash)]
     pub struct PersonID(pub i32);
 
@@ -78,7 +49,7 @@ pub mod atoms {
     pub struct Person {
         pub name: String,
         pub id: PersonID,
-        pub accounts: Vec<AccountID>
+        pub accounts: Vec<AccountID>,
     }
 
     #[derive(Debug, Clone, PartialEq, Eq, Hash)]
