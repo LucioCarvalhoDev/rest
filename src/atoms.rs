@@ -49,14 +49,12 @@ pub mod atoms {
     pub struct Person {
         pub name: String,
         pub id: PersonID,
-        pub accounts: Vec<AccountID>,
     }
 
     #[derive(Debug, Clone, PartialEq, Eq, Hash)]
     pub struct Account {
         pub title: String,
         pub id: AccountID,
-        pub owners: Vec<PersonID>,
     }
 
     #[derive(Debug, Clone)]
