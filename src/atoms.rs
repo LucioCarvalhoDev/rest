@@ -10,11 +10,18 @@ pub mod atoms {
     #[derive(Debug, Clone, PartialEq, Copy, Eq, Hash)]
     pub struct TransactionID(pub i32);
 
+    #[derive(Debug, Clone, PartialEq, Copy, Eq, Hash)]
+    pub enum IDWrapper {
+        WrapperPersonID(PersonID),
+        WrapperAccountID(AccountID),
+        WrapperTransactionID(TransactionID)
+    }
+
     #[derive(Debug, Clone)]
     pub struct IdGenerator {
-        _person: i32,
-        _account: i32,
-        _transaction: i32,
+        pub _person: i32,
+        pub _account: i32,
+        pub _transaction: i32,
     }
 
     impl IdGenerator {

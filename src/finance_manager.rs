@@ -1,6 +1,6 @@
 pub mod fm {
     use crate::atoms::atoms::{
-        Account, AccountID, IdGenerator, Person, PersonID, Transaction, TransactionID,
+        Account, AccountID, IDWrapper, IdGenerator, Person, PersonID, Transaction, TransactionID
     };
     use chrono::{DateTime, Datelike, NaiveDate, Utc};
     use std::{collections::HashMap, vec};
@@ -10,7 +10,7 @@ pub mod fm {
         pub persons: HashMap<PersonID, Person>,
         pub accounts: HashMap<AccountID, Account>,
         pub transactions: HashMap<NaiveDate, Vec<Transaction>>,
-        id_generator: IdGenerator,
+        pub id_generator: IdGenerator,
     }
 
     impl FinanceManager {
@@ -26,6 +26,17 @@ pub mod fm {
             // fin_manager.create_account_for_persons("wallet", vec![PersonID(1)]);
 
             fin_manager
+        }
+
+        pub fn create_person(&mut self, name: &str) -> PersonID {
+            let id = self.id_generator.person();
+
+            let prs = Person {
+                id: id,
+                name: name.to_string()
+            };
+
+            return id;
         }
 
         // pub fn get_all_data_from_person(&self) {
